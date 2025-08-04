@@ -1,0 +1,14 @@
+.DS_Store
+daclip_env2/ 
+daclip_env/ 
+pretrained/
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+__pycache__/
+*.pyc
+*.pyo
+logs/
+wandb/
+.pytest_cache/
