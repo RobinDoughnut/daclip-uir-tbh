@@ -37,6 +37,7 @@ class CLIPVisionCfg:
     n_queries: int = 256  # n_queries for attentional pooler
     attn_pooler_heads: int = 8  # n heads for attentional_pooling
     output_tokens: bool = False
+    block_type: str = 'residual'  # 'residual' or 'deepnorm'
 
     timm_model_name: str = None  # a valid model name overrides layers, width, patch_size
     timm_model_pretrained: bool = False  # use (imagenet) pretrained weights for named model
@@ -63,6 +64,7 @@ class CLIPTextCfg:
     embed_cls: bool = False
     pad_id: int = 0
     output_tokens: bool = False
+    block_type: str = 'residual'  # 'residual' or 'deepnorm'
 
 
 def get_cast_dtype(precision: str):
@@ -140,6 +142,7 @@ def _build_vision_tower(
             output_dim=embed_dim,
             act_layer=act_layer,
             norm_layer=norm_layer,
+            block_type=vision_cfg.block_type,
         )
 
     return visual
@@ -180,6 +183,7 @@ def _build_text_tower(
             pad_id=text_cfg.pad_id,
             act_layer=act_layer,
             norm_layer=norm_layer,
+            block_type=text_cfg.block_type,
         )
     return text
 

@@ -8,6 +8,7 @@ from torch.nn import functional as F
 from torch.utils.checkpoint import checkpoint
 
 from .utils import to_2tuple
+from .experimental_blocks import DeepNormResidualAttentionBlock
 
 
 class LayerNormFp32(nn.LayerNorm):
@@ -335,17 +336,33 @@ class Transformer(nn.Module):
             ls_init_value: float = None,
             act_layer: Callable = nn.GELU,
             norm_layer: Callable = LayerNorm,
+            block_type: str = "residual",
     ):
         super().__init__()
         self.width = width
         self.layers = layers
         self.grad_checkpointing = False
 
-        self.resblocks = nn.ModuleList([
-            ResidualAttentionBlock(
-                width, heads, mlp_ratio, ls_init_value=ls_init_value, act_layer=act_layer, norm_layer=norm_layer)
-            for _ in range(layers)
-        ])
+        if block_type == "deepnorm":
+            # layer_depth starts from 1 for scaling computation
+            self.resblocks = nn.ModuleList([
+                DeepNormResidualAttentionBlock(
+                    d_model=width,
+                    n_head=heads,
+                    mlp_ratio=mlp_ratio,
+                    ls_init_value=ls_init_value,
+                    act_layer=act_layer,
+                    norm_layer=norm_layer,
+                    layer_depth=i + 1,
+                )
+                for i in range(layers)
+            ])
+        else:
+            self.resblocks = nn.ModuleList([
+                ResidualAttentionBlock(
+                    width, heads, mlp_ratio, ls_init_value=ls_init_value, act_layer=act_layer, norm_layer=norm_layer)
+                for _ in range(layers)
+            ])
 
     def get_cast_dtype(self) -> torch.dtype:
         if hasattr(self.resblocks[0].mlp.c_fc, 'int8_original_dtype'):
@@ -391,6 +408,7 @@ class VisionTransformer(nn.Module):
             act_layer: Callable = nn.GELU,
             norm_layer: Callable = LayerNorm,
             output_tokens: bool = False,
+            block_type: str = "residual",
     ):
         super().__init__()
         self.output_tokens = output_tokens
@@ -426,7 +444,8 @@ class VisionTransformer(nn.Module):
             mlp_ratio,
             ls_init_value=ls_init_value,
             act_layer=act_layer,
-            norm_layer=norm_layer
+            norm_layer=norm_layer,
+            block_type=block_type,
         )
 
         self.global_average_pool = global_average_pool
@@ -572,6 +591,7 @@ class TextTransformer(nn.Module):
             embed_cls: bool = False,
             pad_id: int = 0,
             output_tokens: bool = False,
+            block_type: str = "residual",
     ):
         super().__init__()
         self.output_tokens = output_tokens
@@ -599,6 +619,7 @@ class TextTransformer(nn.Module):
             ls_init_value=ls_init_value,
             act_layer=act_layer,
             norm_layer=norm_layer,
+            block_type=block_type,
         )
         self.ln_final = norm_layer(width)
 

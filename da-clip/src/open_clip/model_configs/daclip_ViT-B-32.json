@@ -4,14 +4,16 @@
         "image_size": 224,
         "layers": 12,
         "width": 768,
-        "patch_size": 32
+        "patch_size": 32,
+        "block_type": "deepnorm"
     },
     "text_cfg": {
         "context_length": 77,
         "vocab_size": 49408,
         "width": 512,
         "heads": 8,
-        "layers": 12
+        "layers": 12,
+        "block_type": "deepnorm"
     },
     "custom_text": true
 }
