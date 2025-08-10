@@ -1,27 +1,3 @@
-Adding DeepNorm option to the CLIP transformer and wiring it through configs. I’ll update the transformer classes to accept a block type, extend the config dataclasses, and set `deepnorm` in `daclip_ViT-B-32.json`. Then I’ll mirror the changes for the DA-CLIP training code under `da-clip/src/open_clip`.
-Ran tool
-
-Ran tool
-
-Ran tool
-Ran tool
-Ran tool
-Ran tool
-Ran tool
-Ran tool
-Ran tool
-Ran tool
-Ran tool
-Ran tool
-Ran tool
-Ran tool
-Ran tool
-Ran tool
-Ran tool
-
-- Added DeepNorm as a selectable transformer block for CLIP (vision and text).
-- Wired it via a new `block_type` field in `CLIPVisionCfg` and `CLIPTextCfg` with default `"residual"`. Set `"deepnorm"` in ViT-B/32 configs.
-
 What I changed
 - `universal-image-restoration/open_clip/transformer.py`: supports `block_type="deepnorm"` using `DeepNormResidualAttentionBlock` and passes it through `VisionTransformer` and `TextTransformer`.
 - `universal-image-restoration/open_clip/model.py`: dataclasses now include `block_type`; passed into both transformers.
@@ -39,8 +15,8 @@ How to use
 
 
 ### what happened?
-- I introduced a DeepNorm variant of the CLIP transformer and made it selectable via a new config field `block_type` (default remains "residual").
-- I enabled DeepNorm by default for ViT-B/32 in both trees.
+- DeepNorm variant of the CLIP transformer and made it selectable via a new config field `block_type` (default remains "residual").
+- Enabled DeepNorm by default for ViT-B/32 in both trees.
 
 What I changed
 - `universal-image-restoration/open_clip/transformer.py`: added `block_type` to `Transformer`, `VisionTransformer`, `TextTransformer`; if `"deepnorm"`, uses `DeepNormResidualAttentionBlock`.
@@ -56,4 +32,4 @@ Impact
 - Pretrained weight compatibility: Existing ViT-B/32 checkpoints trained with standard residual blocks will NOT load with DeepNorm (state_dict keys differ). If you need to load those weights, set `block_type` back to `"residual"` (or remove the field) in the relevant JSON(s).
 - DA-CLIP control path: Unaffected in logic; controller still injects per-layer signals, now over DeepNorm blocks.
 
-If you want DeepNorm only on vision or only on text, set `block_type` accordingly in that section of the model config.
+For DeepNorm only on vision or only on text, set `block_type` accordingly in that section of the model config.
