@@ -1,3 +1,7 @@
+## To do
+Introduce self attention in model.py (image restoration)
+
+
 What I changed
 - `universal-image-restoration/open_clip/transformer.py`: supports `block_type="deepnorm"` using `DeepNormResidualAttentionBlock` and passes it through `VisionTransformer` and `TextTransformer`.
 - `universal-image-restoration/open_clip/model.py`: dataclasses now include `block_type`; passed into both transformers.
